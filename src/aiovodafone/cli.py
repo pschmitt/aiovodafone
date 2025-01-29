@@ -168,5 +168,10 @@ async def main() -> None:
     sys.exit(rc)
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Entry point."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    cli()
