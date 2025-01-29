@@ -30,6 +30,9 @@ beautifulsoup4 = "*"
 pytest = "^8.1"
 pytest-cov = ">=5,<7"
 
+[tool.poetry.scripts]
+vodafone-cli = "aiovodafone.cli:main"
+
 [tool.semantic_release]
 version_toml = ["pyproject.toml:tool.poetry.version"]
 version_variables = ["src/aiovodafone/__init__.py:__version__",]
