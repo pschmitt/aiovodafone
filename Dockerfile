@@ -1,4 +1,4 @@
-FROM python:3-alpine
+FROM python:3.12-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --virtual deps --no-cache git gcc musl-dev && \
