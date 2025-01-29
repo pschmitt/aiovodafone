@@ -32,7 +32,7 @@ pytest = "^8.1"
 pytest-cov = ">=5,<7"
 
 [tool.poetry.scripts]
-vodafone-cli = "aiovodafone.cli:main"
+vodafone-cli = "aiovodafone.cli:cli"
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:tool.poetry.version"]
