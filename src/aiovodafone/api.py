@@ -178,7 +178,7 @@ class VodafoneStationCommonApi(ABC):
         """Convert uptime to datetime."""
 
     @abstractmethod
-    async def login(self) -> bool:
+    async def login(self, **kwargs: dict[str, Any]) -> bool:
         """Router login."""
 
     @abstractmethod
@@ -244,9 +244,10 @@ class VodafoneStationTechnicolorApi(VodafoneStationCommonApi):
             seconds=int(uptime),
         )
 
-    async def login(self) -> bool:
+    async def login(self, **kwargs: dict[str, Any]) -> bool:
         """Router login."""
-        _LOGGER.debug("Logging into %s", self.host)
+        force = kwargs.get("force", False)
+        _LOGGER.debug("Logging into %s (force: %s)", self.host, force)
         self._client_session()
 
         _LOGGER.debug("Get salt for login")
@@ -266,9 +267,16 @@ class VodafoneStationTechnicolorApi(VodafoneStationCommonApi):
 
         # Perform login
         _LOGGER.debug("Perform login")
+        payload = {
+            "username": self.username,
+            "password": password_hash,
+        }
+        # disconnect other users if force is set
+        if force:
+            payload["logout"] = "true"
         login_response = await self._post_page_result(
             page="/api/v1/session/login",
-            payload={"username": self.username, "password": password_hash},
+            payload=payload,
         )
         login_json = await login_response.json()
         if "error" in login_json and login_json["error"] == "error":
@@ -584,8 +592,9 @@ class VodafoneStationSercommApi(VodafoneStationCommonApi):
             minutes=m,
         )
 
-    async def login(self) -> bool:
+    async def login(self, **kwargs: dict[str, Any]) -> bool:
         """Router login."""
+        _ = kwargs  # Explicitly mark kwargs as used (ruff arg002)
         _LOGGER.debug("Logging into %s", self.host)
         try:
             self._client_session()
