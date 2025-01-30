@@ -36,7 +36,7 @@ console = Console()
 LOGGER = logging.getLogger(__name__)
 
 
-def get_arguments() -> tuple[ArgumentParser, Namespace]:
+def parse_args() -> Namespace:
     """Get parsed passed in arguments."""
     parser = ArgumentParser(description="aiovodafone library test")
     parser.add_argument(
@@ -57,7 +57,7 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
         "--username",
         "-u",
         type=str,
-        default="vodafone",
+        default="admin",
         help="Set router username",
     )
     parser.add_argument(
@@ -65,6 +65,7 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
         "-p",
         type=str,
         help="Set router password",
+        required=True,
     )
     parser.add_argument(
         "-F",
@@ -103,7 +104,7 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
     ping_parser.add_argument("--count", type=int, default=1, help="Number of pings")
     ping_parser.add_argument("--size", type=int, default=56, help="Ping packet size")
     ping_parser.add_argument(
-        "--interval", type=int, default=1000, help="Ping interval in milliseconds"
+        "--interval", type=int, default=1000, help="Ping interval in milliseconds",
     )
     ping_parser.add_argument("--retries", type=int, default=15, help="Retry count")
 
@@ -111,20 +112,20 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
     traceroute_parser = subparsers.add_parser("traceroute", help="Perform a traceroute")
     traceroute_parser.add_argument("TARGET", type=str, help="IP address to traceroute")
     traceroute_parser.add_argument(
-        "--count", type=int, default=30, help="Max number of hops"
+        "--count", type=int, default=30, help="Max number of hops",
     )
     traceroute_parser.add_argument(
-        "--ip-type", type=str, choices=["Ipv4", "Ipv6"], default="Ipv4", help="IP type"
+        "--ip-type", type=str, choices=["Ipv4", "Ipv6"], default="Ipv4", help="IP type",
     )
     traceroute_parser.add_argument(
-        "--retries", type=int, default=15, help="Retry count"
+        "--retries", type=int, default=15, help="Retry count",
     )
 
     # DNS Resolve
     dns_parser = subparsers.add_parser("dns", help="Resolve a hostname")
     dns_parser.add_argument("TARGET", type=str, help="Hostname to resolve")
     dns_parser.add_argument(
-        "--dns-server", type=str, default="1.1.1.1", help="DNS server to use"
+        "--dns-server", type=str, default="1.1.1.1", help="DNS server to use",
     )
     dns_parser.add_argument(
         "--record-type",
@@ -142,11 +143,11 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
         with Path.open(arguments.configfile) as f:
             arguments = parser.parse_args(namespace=Namespace(**json.load(f)))
 
-    return parser, arguments
+    return arguments
 
 
 async def display_device_info(
-    api: VodafoneStationCommonApi, info_type: str | None = None
+    api: VodafoneStationCommonApi, info_type: str | None = None,
 ) -> None:
     """Display device info based on selected info type."""
     if info_type in ("all", None, "device"):
@@ -209,7 +210,7 @@ async def display_device_info(
         voice_table.add_column("Line Status", style="blue")
 
         voice_table.add_row(
-            "General", voice_data["general"].get("status", "N/A"), "-", "-"
+            "General", voice_data["general"].get("status", "N/A"), "-", "-",
         )
         voice_table.add_row(
             "Line1",
@@ -278,7 +279,7 @@ async def connect(
 
 async def main() -> None:
     """Run main."""
-    parser, args = get_arguments()
+    args = parse_args()
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -286,11 +287,6 @@ async def main() -> None:
         logging.getLogger().setLevel(logging.DEBUG)
         logging.getLogger("asyncio").setLevel(logging.INFO)
         logging.getLogger("charset_normalizer").setLevel(logging.INFO)
-
-    if not args.password:
-        LOGGER.error("You have to specify a password")
-        parser.print_help()
-        sys.exit(1)
 
     api = await connect(args.router, args.username, args.password, args.force)
 
