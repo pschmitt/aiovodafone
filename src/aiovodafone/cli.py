@@ -313,7 +313,7 @@ async def main() -> None:
         res = await api.traceroute(args.TARGET)
     else:
         LOGGER.error("Unknown action: %s", args.ACTION)
-        rc = 1
+        rc = 2
 
     if res:
         print_json(json.dumps(res.get("data")))
