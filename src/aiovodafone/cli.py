@@ -94,6 +94,9 @@ def get_arguments() -> tuple[ArgumentParser, Namespace]:
         help="Specify which info to display (voice, docsis, device).",
     )
 
+    # Restart
+    subparsers.add_parser("restart", aliases=["reboot"], help="Restart router")
+
     # Ping
     ping_parser = subparsers.add_parser("ping", help="Ping a target")
     ping_parser.add_argument("TARGET", type=str, help="IP address to ping")
@@ -296,6 +299,9 @@ async def main() -> None:
 
     if args.ACTION == "info":
         await display_device_info(api, args.info_type)
+    elif args.ACTION in ["restart", "reboot"]:
+        LOGGER.info("Rebooting router...")
+        sys.exit(await api.restart_router())
     elif args.ACTION == "dns":
         LOGGER.debug("ping %s", args.TARGET)
         res = await api.dns_resolve(args.TARGET)
