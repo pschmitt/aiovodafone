@@ -1,8 +1,10 @@
 FROM python:3.12-alpine
 
+COPY . /app
+
 # hadolint ignore=DL3018
-RUN apk add --virtual deps --no-cache git gcc musl-dev && \
-    pip install --no-cache-dir git+https://github.com/pschmitt/aiovodafone@cli && \
+RUN apk add --virtual deps --no-cache gcc musl-dev && \
+    pip install --no-cache-dir /app && \
     apk del deps
 
 ENTRYPOINT ["vodafone-cli"]
