@@ -485,6 +485,28 @@ class VodafoneStationTechnicolorApi(VodafoneStationCommonApi):
 
         return data
 
+    async def get_device_data(self) -> dict[Any, Any]:
+        """Get device data."""
+        _LOGGER.debug("Get device data")
+        response = await self._get_page_result("/api/v1/set_device")
+        response_json = await response.json()
+        _LOGGER.debug("GET reply (%s)", response_json)
+        return response_json.get("data", {})
+
+    async def set_led_state(self, state: bool) -> None:
+        """Set LED state."""
+        dev_data = await self.get_device_data()
+        payload = {
+            "led": "true" if state else "false",
+            "http_state": dev_data.get("http_state"),
+        }
+        _LOGGER.debug("LED payload: %s", payload)
+
+        await self._get_csrf_token(force_update=True)
+        url = "/api/v1/set_device/Sdevice"
+        res = await self._post_page_result(url, payload)
+        _LOGGER.debug("LED response: %s", res)
+
     async def restart_router(self) -> None:
         """Router restart."""
         _LOGGER.debug("Restarting router %s", self.host)
