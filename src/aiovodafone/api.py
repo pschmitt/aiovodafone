@@ -918,13 +918,8 @@ class VodafoneStationSercommApi(VodafoneStationCommonApi):
             minutes=m,
         )
 
-<<<<<<< HEAD
-    async def login(self, **kwargs: dict[str, Any]) -> bool:
-=======
     async def login(self, force_logout: bool = False) -> bool:  # noqa: ARG002
->>>>>>> upstream
         """Router login."""
-        _ = kwargs  # Explicitly mark kwargs as used (ruff arg002)
         _LOGGER.debug("Logging into %s", self.host)
         try:
             self._client_session()
