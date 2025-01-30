@@ -180,7 +180,7 @@ class VodafoneStationCommonApi(ABC):
         """Convert uptime to datetime."""
 
     @abstractmethod
-    async def login(self, **kwargs: dict[str, Any]) -> bool:
+    async def login(self, force_logout: bool = False) -> bool:
         """Router login."""
 
     @abstractmethod
@@ -277,10 +277,9 @@ class VodafoneStationTechnicolorApi(VodafoneStationCommonApi):
             seconds=int(uptime),
         )
 
-    async def login(self, **kwargs: dict[str, Any]) -> bool:
+    async def login(self, force_logout: bool = False) -> bool:
         """Router login."""
-        force = kwargs.get("force", False)
-        _LOGGER.debug("Logging into %s (force: %s)", self.host, force)
+        _LOGGER.debug("Logging into %s (force: %s)", self.host, force_logout)
         self._client_session()
 
         _LOGGER.debug("Get salt for login")
@@ -305,7 +304,7 @@ class VodafoneStationTechnicolorApi(VodafoneStationCommonApi):
             "password": password_hash,
         }
         # disconnect other users if force is set
-        if force:
+        if force_logout:
             payload["logout"] = "true"
         login_response = await self._post_page_result(
             page="/api/v1/session/login",
@@ -919,7 +918,11 @@ class VodafoneStationSercommApi(VodafoneStationCommonApi):
             minutes=m,
         )
 
+<<<<<<< HEAD
     async def login(self, **kwargs: dict[str, Any]) -> bool:
+=======
+    async def login(self, force_logout: bool = False) -> bool:  # noqa: ARG002
+>>>>>>> upstream
         """Router login."""
         _ = kwargs  # Explicitly mark kwargs as used (ruff arg002)
         _LOGGER.debug("Logging into %s", self.host)
