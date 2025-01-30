@@ -172,8 +172,8 @@ async def gather_info_data(
     api: VodafoneStationCommonApi,
     info_type: str | None = None,
 ) -> dict:
-    """
-    Gather info data in a dict (for JSON output).
+    """Gather info data in a dict (for JSON output).
+
     This mirrors what display_device_info() prints using Rich.
     """
     data = {}
@@ -191,7 +191,8 @@ async def gather_info_data(
         }
 
     if info_type in ("all", None, "settings") and isinstance(
-        api, VodafoneStationTechnicolorApi
+        api,
+        VodafoneStationTechnicolorApi,
     ):
         device_settings_data = await api.get_device_data()
         data["settings"] = {
@@ -276,7 +277,10 @@ async def display_device_info(
 
         for which in ["downstream", "upstream"]:
             console.print(
-                Panel(Text(which.capitalize(), style="bold magenta"), expand=False)
+                Panel(
+                    Text(which.capitalize(), style="bold magenta"),
+                    expand=False,
+                ),
             )
             docis_table = Table(title=f"{which.capitalize()} Channels", box=box.SIMPLE)
             docis_table.add_column("Channel", style="cyan")
