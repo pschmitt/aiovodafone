@@ -15,13 +15,20 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from aiovodafone.api import (VodafoneStationCommonApi,
-                             VodafoneStationSercommApi,
-                             VodafoneStationTechnicolorApi)
+from aiovodafone.api import (
+    VodafoneStationCommonApi,
+    VodafoneStationSercommApi,
+    VodafoneStationTechnicolorApi,
+)
 from aiovodafone.const import DeviceType
-from aiovodafone.exceptions import (AlreadyLogged, CannotAuthenticate,
-                                    CannotConnect, GenericLoginError,
-                                    ModelNotSupported, VodafoneError)
+from aiovodafone.exceptions import (
+    AlreadyLogged,
+    CannotAuthenticate,
+    CannotConnect,
+    GenericLoginError,
+    ModelNotSupported,
+    VodafoneError,
+)
 
 console = Console()
 
