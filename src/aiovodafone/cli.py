@@ -6,6 +6,7 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
+from dataclasses import asdict
 from pathlib import Path
 
 import aiohttp
@@ -94,7 +95,7 @@ def parse_args() -> Namespace:
     info_parser.add_argument(
         "info_type",
         nargs="?",  # Allows zero or one argument
-        choices=["voice", "docsis", "device", "settings", "all"],
+        choices=["voice", "docsis", "device", "settings", "all", "clients"],
         help="Specify which info to display (voice, docsis, device, etc.).",
     )
 
@@ -177,6 +178,17 @@ async def gather_info_data(
     This mirrors what display_device_info() prints using Rich.
     """
     data = {}
+
+    if info_type in ("all", None, "clients"):
+        client_data = await api.get_devices_data()
+        data["clients"] = []
+        for device in client_data.values():
+            # Convert the dataclass instance to a dictionary
+            device_dict = asdict(device)
+            # Rename 'device_type' back to 'type' if needed
+            if "device_type" in device_dict:
+                device_dict["type"] = device_dict.pop("device_type")
+            data["clients"].append(device_dict)
 
     if info_type in ("all", None, "device"):
         sensor_data = await api.get_sensor_data()
@@ -333,6 +345,38 @@ async def display_device_info(
 
         console.print(voice_table)
 
+    if info_type in ("all", None, "clients"):
+        # Fetch client data
+        client_data = await api.get_devices_data()
+        LOGGER.debug("client data: %s", client_data)
+
+        # Create a table for client information
+        client_table = Table(title="Connected Clients", box=box.SIMPLE)
+        client_table.add_column("Name", style="cyan")
+        client_table.add_column("MAC Address", style="magenta")
+        client_table.add_column("IP Address", style="yellow")
+        client_table.add_column("Connection Type", style="green")
+        client_table.add_column("Status", style="blue")
+
+        # Populate the table with client data
+        for device in client_data.values():
+            device_dict = asdict(device)
+
+            client_table.add_row(
+                device_dict.get("name", "N/A"),
+                device_dict.get("mac", "N/A"),
+                device_dict.get("ip_address", "N/A"),
+                device_dict.get("connection_type", "N/A"),
+                (
+                    "Connected"
+                    if device_dict.get("connected", False)
+                    else "Disconnected"
+                ),
+            )
+
+        # Print the table
+        console.print(client_table)
+
 
 async def connect(
     hostname: str = "192.168.0.1",
@@ -393,6 +437,7 @@ async def main() -> None:
         logging.getLogger().setLevel(logging.DEBUG)
         logging.getLogger("asyncio").setLevel(logging.INFO)
         logging.getLogger("charset_normalizer").setLevel(logging.INFO)
+        LOGGER.debug("Arguments: %s", args)
 
     api = await connect(args.router, args.username, args.password, args.force)
 
@@ -403,6 +448,8 @@ async def main() -> None:
         if args.json:
             # Gather info in a dict and print as JSON
             info_data = await gather_info_data(api, args.info_type)
+            if args.info_type not in (None, "all", ""):
+                info_data = info_data.get(args.info_type)
             print_json(json.dumps(info_data))
         else:
             # Use the existing Rich-based display
